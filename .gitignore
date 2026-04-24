@@ -1,0 +1,15 @@
+# Environments
+.env
+.venv/
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# Project specifics
+.tmp/
+credentials.json
+token.json
+__pycache__/
+*.pyc

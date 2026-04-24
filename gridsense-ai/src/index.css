@@ -1,0 +1,65 @@
+@import url("https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=DM+Sans:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap");
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  /* Primary Palette */
+  --color-grid-navy: #0a1628; 
+  --color-grid-slate: #111d35; 
+  --color-grid-panel: #1a2744; 
+
+  /* Accent — Energy & Action */
+  --color-cyan-electric: #00e5ff; 
+  --color-cyan-dim: #0097a7; 
+
+  /* Semantic — Status Colors */
+  --color-risk-low: #10b981; 
+  --color-risk-moderate: #f59e0b; 
+  --color-risk-high: #ef4444; 
+  --color-risk-critical: #dc2626; 
+
+  /* Data Visualization */
+  --color-forecast-line: #00e5ff; 
+  --color-actual-line: #a78bfa; 
+  --color-baseline-line: #6b7280; 
+  --color-anomaly-marker: #f59e0b; 
+  --color-theft-marker: #ef4444; 
+
+  /* Text */
+  --color-text-primary: #e2e8f0; 
+  --color-text-secondary: #94a3b8; 
+  --color-text-muted: #475569; 
+  --color-text-inverse: #0a1628; 
+
+  /* Borders & Dividers */
+  --color-border-subtle: #1e3a5f; 
+  --color-border-active: #00e5ff; 
+}
+
+body {
+  background-color: var(--color-grid-navy);
+  color: var(--color-text-primary);
+  font-family: 'DM Sans', sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+h1, h2 {
+  font-family: 'Space Mono', monospace;
+  font-weight: 700;
+}
+
+h3 {
+  font-family: 'DM Sans', sans-serif;
+  font-weight: 500;
+}
+
+.data-value {
+  font-family: 'Space Mono', monospace;
+  font-weight: 700;
+}
+
+.code-text {
+  font-family: 'JetBrains Mono', monospace;
+}
