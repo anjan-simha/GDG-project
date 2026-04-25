@@ -223,6 +223,17 @@ Skills in this project:
 
 ---
 
+## 🛠️ Environment & Troubleshooting
+
+When setting up or debugging the GridSense AI backend environment, follow these learned rules:
+
+1. **Python Version**: Always use **Python 3.12** (or a stable release) for the backend `venv`. **Do not use pre-release versions (like Python 3.14)**. Pre-release Python versions lack pre-compiled binary wheels (`.whl`) for data science libraries (`numpy`, `pandas`, `pydantic_core`). This forces `pip` to build from source, which fails on Windows due to missing C++ compilers (`ModuleNotFoundError` or C-extension failures).
+2. **Network Timeouts (pip)**: If `pip install` fails with `ReadTimeoutError` during SSL handshakes to `pypi.org`, use an alternative HTTP mirror to bypass the network/IPv6 routing issue. Example: `pip install -r requirements.txt -i http://mirrors.aliyun.com/pypi/simple/ --trusted-host mirrors.aliyun.com`.
+3. **Locked Environment Files**: If you need to recreate the `venv`, ensure the user's terminal is not actively locking the `python.exe` executable. If `Remove-Item` fails due to locks, create a new named environment (e.g., `venv312`) and instruct the user to activate the new environment path.
+4. **Database Dependencies**: `psycopg2-binary` is not required for local development because GridSense AI defaults to SQLite (`gridsense.db`). Remove it from `requirements.txt` if it causes compilation errors.
+
+---
+
 ## 🚀 Getting Started Checklist
 
 When starting a new session, the agent should:
