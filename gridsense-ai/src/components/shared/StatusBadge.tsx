@@ -59,7 +59,7 @@ export const StatusBadge: React.FC<StatusBadgeProps> = ({ status, size = 'md', p
   return (
     <span className={`${baseClasses} ${sizeClasses} ${bgClass} ${textClass} ${borderClass} ${pulseClass}`}>
       <Icon size={size === 'sm' ? 12 : 14} />
-      {status.replace(/_/g, ' ')}
+      {status ? String(status).replace(/_/g, ' ') : 'UNKNOWN'}
     </span>
   );
 };

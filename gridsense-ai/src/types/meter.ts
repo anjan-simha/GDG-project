@@ -73,3 +73,14 @@ export interface ZoneSummary {
   forecastDeviation: number;
   riskLevel: ZoneRiskLevel;
 }
+
+export interface AnomalyFilters {
+  status?: string;
+  zone_id?: string;
+  meter_id?: string;
+}
+
+export interface DismissPayload {
+  reason_code: string;
+  notes?: string;
+}
