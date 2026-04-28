@@ -1,4 +1,5 @@
 import { api } from './api';
+import { AxiosResponse } from 'axios';
 
 export interface EnrichFlagResponse {
   flag_id: string;
@@ -30,20 +31,20 @@ export const intelligenceService = {
   enrichFlag: (flagId: string): Promise<EnrichFlagResponse> =>
     api
       .post('/api/intelligence/enrich-flag', { flag_id: flagId })
-      .then((r) => r.data),
+      .then((r: AxiosResponse<EnrichFlagResponse>) => r.data),
 
   ask: (question: string): Promise<OperatorQAResponse> =>
     api
       .post('/api/intelligence/ask', { question })
-      .then((r) => r.data),
+      .then((r: AxiosResponse<OperatorQAResponse>) => r.data),
 
   getZoneReport: (zoneId: string): Promise<ZoneReportResponse> =>
     api
       .post('/api/intelligence/zone-report', { zone_id: zoneId })
-      .then((r) => r.data),
+      .then((r: AxiosResponse<ZoneReportResponse>) => r.data),
 
   getPatternSummary: (zoneId: string): Promise<PatternSummaryResponse> =>
     api
       .get(`/api/intelligence/zone-pattern/${zoneId}`)
-      .then((r) => r.data),
+      .then((r: AxiosResponse<PatternSummaryResponse>) => r.data),
 };

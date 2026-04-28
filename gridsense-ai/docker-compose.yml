@@ -1,35 +1,34 @@
 version: "3.9"
-services:
-  postgres:
-    image: postgres:15-alpine
-    container_name: gridsense_postgres
-    environment:
-      POSTGRES_USER: gridsense
-      POSTGRES_PASSWORD: gridsense
-      POSTGRES_DB: gridsense_db
-    ports:
-      - "5432:5432"
-    volumes:
-      - pgdata:/var/lib/postgresql/data
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U gridsense"]
-      interval: 5s
-      timeout: 5s
-      retries: 5
 
+# ─────────────────────────────────────────────────────
+# GridSense AI — Local Development (SQLite)
+# Run:  docker-compose up --build
+# ─────────────────────────────────────────────────────
+services:
   backend:
     build: ./backend
     container_name: gridsense_backend
+    env_file:
+      - ./backend/.env
     environment:
-      DATABASE_URL: postgresql://gridsense:gridsense@postgres:5432/gridsense_db
+      DATABASE_URL: sqlite:///./gridsense.db
     ports:
       - "8000:8000"
-    depends_on:
-      postgres:
-        condition: service_healthy
     volumes:
       - ./backend:/app
     command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
 
-volumes:
-  pgdata:
+  frontend:
+    image: node:20-alpine
+    container_name: gridsense_frontend
+    working_dir: /app
+    volumes:
+      - .:/app
+      - /app/node_modules
+    ports:
+      - "5173:5173"
+    environment:
+      - VITE_API_BASE_URL=http://localhost:8000
+    command: sh -c "npm install && npm run dev -- --host 0.0.0.0"
+    depends_on:
+      - backend

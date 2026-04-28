@@ -1,0 +1,58 @@
+services:
+  # ──────────────────────────────────────────
+  # Backend — FastAPI (Docker)
+  # ──────────────────────────────────────────
+  - type: web
+    name: gridsense-backend
+    runtime: docker
+    dockerfilePath: ./backend/Dockerfile
+    dockerContext: ./backend
+    plan: free
+    healthCheckPath: /health
+    envVars:
+      - key: DATABASE_URL
+        value: sqlite:///./gridsense.db
+      - key: SECRET_KEY
+        generateValue: true          # Render auto-generates a secure value
+      - key: ENVIRONMENT
+        value: production
+      - key: ALLOWED_ORIGINS
+        value: "*"                   # Update to your frontend URL after first deploy
+      - key: LOG_LEVEL
+        value: INFO
+      - key: SYNTHETIC_DATA_BANNER
+        value: "true"
+      - key: LLM_ENABLED
+        value: "true"
+      - key: LLM_MOCK_MODE
+        value: "false"
+      - key: LLM_MAX_RETRIES
+        value: "3"
+      - key: LLM_TIMEOUT_SECONDS
+        value: "15"
+      - key: GEMINI_PRIMARY_MODEL
+        value: gemini-2.0-flash
+      - key: GEMINI_REPORT_MODEL
+        value: gemini-1.5-pro
+      - key: GEMINI_API_KEY
+        sync: false                  # Set this manually in Render dashboard (never in git)
+
+  # ──────────────────────────────────────────
+  # Frontend — React/Vite (Static Site)
+  # ──────────────────────────────────────────
+  - type: web
+    name: gridsense-frontend
+    runtime: static
+    buildCommand: npm install && npm run build
+    staticPublishPath: ./dist
+    plan: free
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html    # Fixes React Router client-side routing
+    envVars:
+      - key: VITE_API_BASE_URL
+        fromService:
+          name: gridsense-backend
+          type: web
+          property: host            # Auto-wires backend URL to frontend at build time
