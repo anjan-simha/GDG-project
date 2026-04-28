@@ -32,11 +32,12 @@ services:
   # ──────────────────────────────────────────
   # Frontend — React/Vite (Static Site)
   # ──────────────────────────────────────────
-  - type: static
+  - type: web
     name: gridsense-frontend
+    runtime: static
     buildCommand: npm install && npm run build
     staticPublishPath: ./dist
-    # No 'plan' needed for static sites
+    # Note: No 'plan' field here for static runtime
     routes:
       - type: rewrite
         source: /*
