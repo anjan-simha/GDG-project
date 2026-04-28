@@ -1,0 +1,18 @@
+# Exclude frontend source and local dev artifacts from the Vercel deployment bundle
+node_modules
+src
+public
+backend/venv
+backend/venv312
+backend/__pycache__
+backend/gridsense.db
+dist
+.git
+.vscode
+*.log
+docker-compose.yml
+render.yaml
+Dockerfile
+README.md
+lint_output.txt
+package-lock.json
