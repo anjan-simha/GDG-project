@@ -13,6 +13,7 @@ class Settings(BaseSettings):
     llm_enabled: bool = True
     llm_max_retries: int = 3
     llm_timeout_seconds: int = 15
+    llm_mock_mode: bool = False
 
     model_config = SettingsConfigDict(env_file=".env")
 

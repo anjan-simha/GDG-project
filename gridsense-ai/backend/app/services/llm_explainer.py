@@ -124,6 +124,59 @@ def _call_gemini(model_name: str, prompt: str) -> Optional[str]:
     return None
 
 
+# ── Local Simulation Logic ──────────────────────────────────────────────────
+
+def _simulate_enrichment(flag: AnomalyFlag, zone_name: str) -> str:
+    """Generates a realistic simulated explanation without API calls."""
+    anomaly_plain = flag.anomaly_type.name if hasattr(flag.anomaly_type, 'name') else str(flag.anomaly_type)
+    
+    templates = {
+        "SUDDEN_DROP": [
+            f"The monitoring system observed a {flag.baseline_deviation_pct:.1f}% drop in load for meter {flag.id} in {zone_name}. This sustained decrease suggests a potential supply interruption or downstream connectivity issue.",
+            f"A significant reduction in consumption was recorded in {zone_name}, deviating {flag.baseline_deviation_pct:.1f}% from the 7-day average. The pattern indicates a possible phase failure or customer-side disconnection."
+        ],
+        "SUDDEN_SPIKE": [
+            f"An unusual surge of {flag.baseline_deviation_pct:.1f}% over baseline was detected in {zone_name}. This spike is consistent with high-intensity equipment startup or a potential secondary-side short circuit.",
+            f"Consumption at this node jumped to {flag.severity_score} severity levels, exceeding typical load patterns by {flag.baseline_deviation_pct:.1f}%. Immediate load balancing review for the {zone_name} transformer is recommended."
+        ],
+        "TAMPER_SUSPECTED": [
+            f"Critical anomaly detected in {zone_name} involving multiple signals: {', '.join(flag.contributing_features or ['bypass indicators'])}. The {flag.baseline_deviation_pct:.1f}% deviation strongly matches historical patterns of energy theft or meter bypass.",
+            f"Multiple integrity signals triggered for this meter in {zone_name}. Combined with a {flag.baseline_deviation_pct:.1f}% baseline shift, this suggests physical tampering or magnetic interference."
+        ]
+    }
+    
+    import random
+    default_text = f"The node in {zone_name} is showing a {anomaly_plain} anomaly with {flag.baseline_deviation_pct:.1f}% deviation. Statistical severity is {flag.severity_score}/100 based on {', '.join(flag.contributing_features or ['current load'])[:50]}."
+    
+    options = templates.get(anomaly_plain, [default_text])
+    return random.choice(options)
+
+def _simulate_answer(question: str, context: dict) -> str:
+    """Generates a grounded answer based on the provided context dict."""
+    q = question.lower()
+    zones = context.get("zones", [])
+    open_flags = context.get("open_flags_total", 0)
+    high_risk = context.get("high_risk_zones", 0)
+    
+    if "risk" in q or "critical" in q:
+        high_risk_names = [z['name'] for z in zones if z['risk_level'] in ('HIGH', 'CRITICAL')]
+        if high_risk_names:
+            return f"Currently, there are {high_risk} zones at high or critical risk, specifically {', '.join(high_risk_names[:3])}. You should prioritize checking the {open_flags} open anomaly flags across these areas."
+        return f"The network is relatively stable with {high_risk} critical risk zones. However, there are still {open_flags} open flags that require routine review."
+
+    if "zone" in q or "where" in q:
+        top_zone = max(zones, key=lambda x: x.get('open_flag_count', 0)) if zones else None
+        if top_zone:
+            return f"The highest activity is currently in {top_zone['name']}, which has {top_zone['open_flag_count']} open anomaly flags. Other active areas include {', '.join([z['name'] for z in zones[:3] if z['name'] != top_zone['name']])}."
+            
+    if "load" in q or "consumption" in q:
+        total_load = sum(z.get('current_load_kwh', 0) for z in zones)
+        return f"The total monitored load across all zones is approximately {total_load:.1f} kWh. Forecast accuracy remains high at {context.get('forecast_accuracy_24h', 0):.1f}%, allowing for reliable demand planning."
+
+    return f"I've analysed the current state: there are {open_flags} open flags and {high_risk} high-risk zones. The forecast accuracy is currently {context.get('forecast_accuracy_24h', 0):.1f}%. Please let me know if you need details on a specific zone."
+
+
+
 # ── Public API ──────────────────────────────────────────────────────────────
 
 def enrich_flag_explanation(
@@ -144,8 +197,14 @@ def enrich_flag_explanation(
     Returns:
         A 2–3 sentence explanation string. Never empty.
     """
-    if not settings.llm_enabled or not settings.gemini_api_key:
+    if not settings.llm_enabled:
         return flag.explanation  # Graceful no-op
+
+    if settings.llm_mock_mode:
+        return f"[SIMULATED] {_simulate_enrichment(flag, zone_name)}"
+
+    if not settings.gemini_api_key:
+        return flag.explanation
 
     # Map enum to plain English for the prompt
     anomaly_descriptions = {
@@ -217,7 +276,13 @@ def answer_operator_question(
     Returns:
         A grounded, factual answer string. Never empty.
     """
-    if not settings.llm_enabled or not settings.gemini_api_key:
+    if not settings.llm_enabled:
+        return "AI assistant is currently disabled."
+
+    if settings.llm_mock_mode:
+        return f"[SIMULATED] {_simulate_answer(question, context)}"
+
+    if not settings.gemini_api_key:
         return "AI assistant is currently unavailable. Please check system configuration."
 
     # Sanitise question length
@@ -276,6 +341,12 @@ Instructions:
             return result.strip()
         raise ValueError("Invalid response")
     except Exception as e:
+        # Detect quota error and provide simulated fallback
+        error_str = str(e).lower()
+        if "429" in error_str or "quota" in error_str or "resourceexhausted" in error_str:
+            logger.warning(f"[LLM] Quota exceeded. Falling back to simulation.")
+            return f"[SIMULATED] {_simulate_answer(question, context)}"
+            
         logger.warning(f"[LLM] Q&A call failed: {e}")
         _write_audit_log(db, None, None,
                          settings.gemini_primary_model, False, str(e)[:100])

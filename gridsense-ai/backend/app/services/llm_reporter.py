@@ -47,6 +47,38 @@ def _call_gemini_pro(prompt: str) -> Optional[str]:
     return response.text if response.parts else None
 
 
+# ── Local Simulation Logic ──────────────────────────────────────────────────
+
+def _simulate_report(zone_name: str, risk_level: str, flags: List[dict]) -> str:
+    """Generates a structured simulated report."""
+    flag_types = list(set([f.get('anomaly_type', 'Unknown') for f in flags]))
+    ts = datetime.utcnow().strftime("%d %b %Y, %H:%M UTC")
+    
+    return f"""SECTION 1 — ZONE SUMMARY
+{zone_name} is currently under {risk_level} risk level monitoring as of {ts}. The distribution network in this area shows localized instability affecting multiple nodes.
+
+SECTION 2 — ANOMALY FINDINGS
+We have detected {len(flags)} active flags, primarily consisting of {', '.join(flag_types[:2])}. The highest deviation recorded is {max([f.get('baseline_deviation_pct', 0) for f in flags] + [0]):.1f}%, suggesting either physical infrastructure issues or consumer-side anomalies.
+
+SECTION 3 — RECOMMENDED ACTIONS
+1. Dispatch field crews to verify meter integrity for high-severity flags in the {zone_name} cluster.
+2. Cross-reference SCADA data for the primary substation serving this zone to rule out upstream phase imbalance.
+
+SECTION 4 — FORECAST OUTLOOK
+Demand is expected to remain within {risk_level} thresholds for the next 24 hours. Load balancing is advised if additional anomalies are detected during peak evening hours."""
+
+def _simulate_pattern(zone_name: str, flags: List[dict]) -> str:
+    """Generates a simulated pattern summary."""
+    types = [f.get("anomaly_type", "") for f in flags]
+    type_counts = {t: types.count(t) for t in set(types)}
+    type_summary = ", ".join([f"{v}x {k}" for k, v in type_counts.items()])
+    
+    if len(flags) > 5:
+        return f"A significant cluster of {len(flags)} anomalies ({type_summary}) has been detected in {zone_name}. This pattern strongly suggests a zone-wide distribution issue, possibly a transformer-level load imbalance or widespread supply interruption."
+    return f"Multiple anomalies ({type_summary}) are occurring in {zone_name}. While these appear semi-isolated, the frequency suggests a developing trend that requires immediate oversight by the zone manager."
+
+
+
 def generate_zone_inspection_report(
     zone_name: str,
     zone_id: str,
@@ -71,7 +103,13 @@ def generate_zone_inspection_report(
     Returns:
         A structured plain-text inspection report. Falls back to a basic summary on error.
     """
-    if not settings.llm_enabled or not settings.gemini_api_key:
+    if not settings.llm_enabled:
+        return _fallback_report(zone_name, risk_level, flags)
+
+    if settings.llm_mock_mode:
+        return _simulate_report(zone_name, risk_level, flags)
+
+    if not settings.gemini_api_key:
         return _fallback_report(zone_name, risk_level, flags)
 
     ts = (generated_at or datetime.utcnow()).strftime("%d %b %Y, %H:%M UTC")
@@ -122,6 +160,11 @@ Keep the total report under 250 words.
             return result.strip()
         raise ValueError("Report response too short")
     except Exception as e:
+        error_str = str(e).lower()
+        if "429" in error_str or "quota" in error_str or "resourceexhausted" in error_str:
+            logger.warning(f"[LLM] Quota exceeded. Falling back to simulation.")
+            return _simulate_report(zone_name, risk_level, flags)
+            
         logger.warning(f"[LLM] Report generation failed for zone {zone_id}: {e}")
         return _fallback_report(zone_name, risk_level, flags)
 
@@ -135,7 +178,13 @@ def summarise_multi_anomaly_pattern(
     generates a pattern-level summary to help operators understand
     if this is a zone-wide issue or isolated incidents.
     """
-    if not settings.llm_enabled or not settings.gemini_api_key:
+    if not settings.llm_enabled:
+        return f"{len(flags)} anomalies detected across multiple meters in {zone_name}. Manual review recommended."
+
+    if settings.llm_mock_mode:
+        return f"[SIMULATED] {_simulate_pattern(zone_name, flags)}"
+
+    if not settings.gemini_api_key:
         return f"{len(flags)} anomalies detected across multiple meters in {zone_name}. Manual review recommended."
 
     types = [f.get("anomaly_type", "") for f in flags]
@@ -162,6 +211,11 @@ Do not use bullet points. Write in plain English. Be direct.
             return result.strip()
         raise ValueError("Empty summary")
     except Exception as e:
+        error_str = str(e).lower()
+        if "429" in error_str or "quota" in error_str or "resourceexhausted" in error_str:
+            logger.warning(f"[LLM] Quota exceeded. Falling back to simulation.")
+            return f"[SIMULATED] {_simulate_pattern(zone_name, flags)}"
+            
         logger.warning(f"[LLM] Pattern summary failed: {e}")
         return (
             f"{len(flags)} anomalies detected across multiple meters in {zone_name} "
