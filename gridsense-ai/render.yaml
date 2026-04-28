@@ -5,8 +5,9 @@ services:
   - type: web
     name: gridsense-backend
     runtime: docker
-    dockerfilePath: ./backend/Dockerfile
-    dockerContext: ./backend
+    rootDir: gridsense-ai # <--- Tell Render the code is in this folder
+    dockerfilePath: backend/Dockerfile
+    dockerContext: backend
     plan: free
     healthCheckPath: /health
     envVars:
@@ -35,9 +36,9 @@ services:
   - type: web
     name: gridsense-frontend
     runtime: static
+    rootDir: gridsense-ai # <--- Tell Render the code is in this folder
     buildCommand: npm install && npm run build
-    staticPublishPath: ./dist
-    # Note: No 'plan' field here for static runtime
+    staticPublishPath: dist
     routes:
       - type: rewrite
         source: /*
