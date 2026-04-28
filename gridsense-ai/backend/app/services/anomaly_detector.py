@@ -6,7 +6,7 @@ Method: Rule-based thresholds + Z-score statistics. Fully explainable.
 """
 
 import uuid
-import statistics
+import numpy as np
 from datetime import datetime, timedelta
 from typing import List, Optional, Tuple
 from app.models.meter_reading import MeterReading
@@ -40,8 +40,8 @@ def detect_sudden_drop(
     if not baselines:
         return None
 
-    avg_baseline = statistics.mean(baselines)
-    avg_recent = statistics.mean([r.consumption_kwh for r in recent])
+    avg_baseline = np.mean(baselines)
+    avg_recent = np.mean([r.consumption_kwh for r in recent])
     deviation_pct = ((avg_recent - avg_baseline) / avg_baseline) * 100
 
     if deviation_pct < -(cfg.drop_threshold * 100):
@@ -85,8 +85,8 @@ def detect_sudden_spike(
     if not baselines:
         return None
 
-    avg_baseline = statistics.mean(baselines)
-    avg_recent = statistics.mean([r.consumption_kwh for r in recent])
+    avg_baseline = np.mean(baselines)
+    avg_recent = np.mean([r.consumption_kwh for r in recent])
     deviation_pct = ((avg_recent - avg_baseline) / avg_baseline) * 100
 
     if deviation_pct > (cfg.spike_threshold * 100):
@@ -126,12 +126,10 @@ def detect_peer_deviation(
         return None
 
     differences = [c - p for c, p in zip(consumptions, peer_avgs)]
-    diff_mean = statistics.mean(differences)
-    diff_std = statistics.stdev(differences) if len(differences) > 1 else 0
-    z_score = abs(diff_mean) / (diff_std + 1e-9)
+    z_score = abs(np.mean(differences)) / (np.std(differences) + 1e-9)
 
     if z_score > cfg.peer_zscore_threshold:
-        avg_deviation_pct = (diff_mean / statistics.mean(peer_avgs)) * 100
+        avg_deviation_pct = (np.mean(differences) / np.mean(peer_avgs)) * 100
         return AnomalyFlag(
             id=str(uuid.uuid4()),
             meter_id=meter_id,
@@ -173,8 +171,8 @@ def detect_night_usage(
     if not night_readings or not day_readings:
         return None
 
-    night_avg = statistics.mean([r.consumption_kwh for r in night_readings])
-    day_avg = statistics.mean([r.consumption_kwh for r in day_readings])
+    night_avg = np.mean([r.consumption_kwh for r in night_readings])
+    day_avg = np.mean([r.consumption_kwh for r in day_readings])
 
     if day_avg == 0:
         return None
@@ -257,8 +255,8 @@ def detect_consistent_underreport(
     if len(peer_avgs) < 96 * 3: # Require at least 3 days of data
         return None
 
-    avg_peer = statistics.mean(peer_avgs)
-    avg_consumption = statistics.mean(consumptions)
+    avg_peer = np.mean(peer_avgs)
+    avg_consumption = np.mean(consumptions)
 
     if avg_peer == 0:
         return None

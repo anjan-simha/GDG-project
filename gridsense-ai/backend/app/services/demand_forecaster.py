@@ -5,8 +5,7 @@ Intentionally kept explainable — no black-box deep learning.
 [SYNTHETIC DATA] — uses synthetic meter readings only.
 """
 
-import statistics
-import random
+import numpy as np
 from datetime import datetime, timedelta
 from typing import List, Optional
 from sqlalchemy.orm import Session
@@ -55,7 +54,7 @@ def calculate_rolling_baseline(
     ]
     if not slot_readings:
         return 0.0
-    return float(statistics.mean(slot_readings[-lookback_days * 1:]))  # 1 reading per slot per day
+    return float(np.mean(slot_readings[-lookback_days * 1:]))  # 1 reading per slot per day
 
 def generate_zone_forecast(
     db: Session,
@@ -97,7 +96,7 @@ def generate_zone_forecast(
         predicted = base * tod_mult * dow_mult
 
         # Add Gaussian noise
-        noise = random.gauss(0, predicted * noise_pct)
+        noise = np.random.normal(0, predicted * noise_pct)
         predicted = max(0, predicted + noise)
 
         # Confidence interval: ±10%
