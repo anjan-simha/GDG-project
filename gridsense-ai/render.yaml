@@ -26,25 +26,17 @@ services:
         value: "true"
       - key: LLM_MOCK_MODE
         value: "false"
-      - key: LLM_MAX_RETRIES
-        value: "3"
-      - key: LLM_TIMEOUT_SECONDS
-        value: "15"
-      - key: GEMINI_PRIMARY_MODEL
-        value: gemini-2.0-flash
-      - key: GEMINI_REPORT_MODEL
-        value: gemini-1.5-pro
       - key: GEMINI_API_KEY
         sync: false
 
   # ──────────────────────────────────────────
   # Frontend — React/Vite (Static Site)
   # ──────────────────────────────────────────
-  - type: static_site
+  - type: static
     name: gridsense-frontend
     buildCommand: npm install && npm run build
     staticPublishPath: ./dist
-    # No 'plan: free' needed for static sites on Render (they are always free)
+    # No 'plan' needed for static sites
     routes:
       - type: rewrite
         source: /*
