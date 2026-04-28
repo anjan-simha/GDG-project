@@ -2,7 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.config import get_settings
 from app.database import engine, Base
-from app.routers import zones, meters, forecasts, anomalies, dashboard, audit
+from app.routers import zones, meters, forecasts, anomalies, dashboard, audit, intelligence
 
 # We need to import all models so SQLAlchemy knows about them before create_all
 import app.models.zone
@@ -37,6 +37,7 @@ app.include_router(meters.router,    prefix="/api/meters",    tags=["Meters"])
 app.include_router(forecasts.router, prefix="/api/forecasts", tags=["Forecasts"])
 app.include_router(anomalies.router, prefix="/api/anomalies", tags=["Anomalies"])
 app.include_router(audit.router,     prefix="/api/audit",     tags=["Audit"])
+app.include_router(intelligence.router, prefix="/api/intelligence", tags=["Intelligence"])
 
 @app.get("/health")
 def health_check():

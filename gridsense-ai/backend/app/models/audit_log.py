@@ -11,6 +11,7 @@ class AuditAction(str, enum.Enum):
     FORECAST_RUN = "FORECAST_RUN"
     ANOMALY_SCAN_RUN = "ANOMALY_SCAN_RUN"
     DATA_EXPORTED = "DATA_EXPORTED"
+    LLM_CALL = "LLM_CALL"
 
 class AuditLog(Base):
     __tablename__ = "audit_logs"
