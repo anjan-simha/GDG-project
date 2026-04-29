@@ -1,0 +1,17 @@
+{
+  "version": 2,
+  "rewrites": [
+    {
+      "source": "/api/(.*)",
+      "destination": "/api/index.py"
+    }
+  ],
+  "env": {
+    "PYTHONPATH": ".:backend",
+    "DATABASE_URL": "sqlite:///./backend/gridsense.db",
+    "GEMINI_PRIMARY_MODEL": "gemini-2.0-flash",
+    "GEMINI_REPORT_MODEL": "gemini-1.5-pro",
+    "LLM_ENABLED": "true",
+    "LLM_MOCK_MODE": "true"
+  }
+}

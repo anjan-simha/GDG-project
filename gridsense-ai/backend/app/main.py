@@ -39,7 +39,7 @@ app.include_router(anomalies.router, prefix="/api/anomalies", tags=["Anomalies"]
 app.include_router(audit.router,     prefix="/api/audit",     tags=["Audit"])
 app.include_router(intelligence.router, prefix="/api/intelligence", tags=["Intelligence"])
 
-@app.get("/health")
+@app.get("/api/health")
 def health_check():
     return {"status": "ok", "service": "GridSense AI", "synthetic_mode": True}
 

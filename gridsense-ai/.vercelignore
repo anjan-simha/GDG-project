@@ -1,18 +1,17 @@
-# Exclude frontend source and local dev artifacts from the Vercel deployment bundle
+# Vercel Ignore File
 node_modules
-src
-public
 backend/venv
 backend/venv312
 backend/__pycache__
-backend/gridsense.db
-dist
 .git
 .vscode
 *.log
 docker-compose.yml
 render.yaml
 Dockerfile
-README.md
 lint_output.txt
 package-lock.json
+
+# We want Vercel to build the project from source, so we DO NOT ignore src or public
+# We also want to include the initial database if needed, but for security/size we might want to be careful.
+# For now, let's include it so the demo works immediately.
