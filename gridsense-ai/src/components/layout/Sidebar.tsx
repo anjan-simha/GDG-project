@@ -1,6 +1,6 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
-import { LayoutDashboard, TrendingUp, AlertTriangle, Map, SlidersHorizontal, ClipboardList } from 'lucide-react';
+import { LayoutDashboard, TrendingUp, AlertTriangle, Map, SlidersHorizontal, ClipboardList, Bot } from 'lucide-react';
 
 const navItems = [
   { path: '/', label: 'Dashboard', icon: LayoutDashboard },
@@ -8,6 +8,7 @@ const navItems = [
   { path: '/anomalies', label: 'Anomalies', icon: AlertTriangle },
   { path: '/zones/BLR-N01', label: 'Zone Detail', icon: Map },
   { path: '/audit', label: 'Audit Log', icon: ClipboardList },
+  { path: '/intelligence', label: 'AI Intelligence', icon: Bot },
   { path: '/settings', label: 'Settings', icon: SlidersHorizontal },
 ];
 

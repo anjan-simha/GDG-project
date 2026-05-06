@@ -9,6 +9,7 @@ import { AnomalyPage } from './pages/AnomalyPage';
 import { ZoneDetailPage } from './pages/ZoneDetailPage';
 import { SettingsPage } from './pages/SettingsPage';
 import { AuditLogPage } from './pages/AuditLogPage';
+import { IntelligencePage } from './pages/IntelligencePage';
 import { SkeletonLoader } from './components/shared/SkeletonLoader';
 import { ToastContainer } from './components/shared/ToastContainer';
 
@@ -51,6 +52,7 @@ function App() {
                 <Route path="/zones/:zoneId" element={<ZoneDetailPage />} />
                 <Route path="/settings" element={<SettingsPage />} />
                 <Route path="/audit" element={<AuditLogPage />} />
+                <Route path="/intelligence" element={<IntelligencePage />} />
               </Routes>
             </main>
           </div>

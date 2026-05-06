@@ -1,4 +1,5 @@
 from pydantic_settings import BaseSettings, SettingsConfigDict
+from typing import Optional
 
 class Settings(BaseSettings):
     database_url: str = "postgresql://gridsense:gridsense@localhost:5432/gridsense_db"
@@ -7,6 +8,12 @@ class Settings(BaseSettings):
     allowed_origins: str = "http://localhost:5173"
     log_level: str = "INFO"
     synthetic_data_banner: bool = True
+    gemini_api_key: Optional[str] = None
+    gemini_primary_model: str = "gemini-2.5-flash"
+    gemini_report_model: str = "gemini-2.5-flash"
+    llm_enabled: bool = True
+    llm_max_retries: int = 3
+    llm_timeout_seconds: int = 15
 
     model_config = SettingsConfigDict(env_file=".env")
 

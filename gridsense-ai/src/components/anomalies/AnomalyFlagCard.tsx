@@ -1,6 +1,7 @@
 import React from 'react';
 import { StatusBadge } from '../shared/StatusBadge';
 import { ExplainabilityTooltip } from '../shared/ExplainabilityTooltip';
+import { EnrichedExplanation } from '../intelligence/EnrichedExplanation';
 
 interface Props {
   flag: any; // using any temporarily since type definition needs update
@@ -33,7 +34,10 @@ export const AnomalyFlagCard: React.FC<Props> = ({ flag, onDismiss, onConfirm, o
       </div>
 
       <div className="mb-4 text-sm font-sans text-text-secondary leading-relaxed bg-grid-slate/30 p-3 rounded-md border border-border-subtle">
-        {flag.explanation}
+        <EnrichedExplanation
+          flagId={flag.id}
+          templateExplanation={flag.explanation}
+        />
       </div>
 
       <div className="grid grid-cols-2 gap-4 mb-4">

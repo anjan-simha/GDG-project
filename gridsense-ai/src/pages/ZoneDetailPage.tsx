@@ -9,6 +9,7 @@ import { DemandForecastChart } from '../components/forecasting/DemandForecastCha
 import { EmptyState } from '../components/shared/EmptyState';
 import { Map, AlertTriangle } from 'lucide-react';
 import { SkeletonLoader } from '../components/shared/SkeletonLoader';
+import { InspectionReport } from '../components/intelligence/InspectionReport';
 
 export const ZoneDetailPage: React.FC = () => {
   const { zoneId } = useParams<{ zoneId: string }>();
@@ -134,6 +135,10 @@ export const ZoneDetailPage: React.FC = () => {
           <EmptyState icon={AlertTriangle} title="No History" description="There are no recorded anomalies for this zone." />
         )}
       </div>
+
+      <section className="mt-6">
+        <InspectionReport zoneId={zoneId || ''} zoneName={zone?.name ?? (zoneId || '')} />
+      </section>
     </PageWrapper>
   );
 };
